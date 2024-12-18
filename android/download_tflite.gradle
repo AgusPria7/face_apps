@@ -1,0 +1,22 @@
+task downloadTensorFlowLite {
+    def tensorFlowRepo = 'https://repo1.maven.org/maven2/org/tensorflow/tensorflow-lite'
+    def tensorFlowVersion = '2.13.0'  // Use latest stable version
+    def outputDir = new File("$projectDir/src/main/jniLibs")
+    
+    doLast {
+        def architectures = ['armeabi-v7a', 'arm64-v8a', 'x86_64']
+        architectures.each { architecture ->
+            def libraryUrl = "${tensorFlowRepo}/${tensorFlowVersion}/tensorflow-lite-${tensorFlowVersion}-${architecture}.aar"
+            def outputPath = new File(outputDir, "${architecture}/libtensorflowlite_jni.so")
+            
+            if (!outputPath.exists()) {
+                outputPath.parentFile.mkdirs()
+                new URL(libraryUrl).withInputStream { i -> 
+                    outputPath.withOutputStream { it << i }
+                }
+            }
+        }
+    }
+}
+
+preBuild.dependsOn downloadTensorFlowLite
